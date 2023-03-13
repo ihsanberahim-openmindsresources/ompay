@@ -1,0 +1,56 @@
+{
+    "name": "omconnect/pay",
+    "description": "handle payments for IAP (Apple/GooglePlay)",
+    "keywords": [
+        "openmindsresources",
+        "payment"
+    ],
+    "license": "MIT",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "Omconnect\\Pay\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Omconnect\\Pay\\Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "test-coverage": "vendor/bin/phpunit --coverage-html coverage"
+
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "authors": [
+        {
+            "name": "Ihsan Berahim",
+            "email": "ihsanberahim@openmindsresources.com"
+        }
+    ],
+    "require": {
+        "php": "^7.4|^8.0",
+        "firebase/php-jwt": "^5.2",
+        "google/apiclient": "^2.13",
+        "guzzlehttp/guzzle": "^7.0.1",
+        "illuminate/database": "^10.0",
+        "illuminate/support": "^10.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^8.0",
+        "phpunit/phpunit": "^10.0"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Omconnect\\Pay\\OmPayServiceProvider"
+            ],
+            "aliases": {
+                "OmPay": "Omconnect\\Pay\\OmPayFacade"
+            }
+        }
+    }
+}
