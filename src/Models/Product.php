@@ -33,9 +33,7 @@ class Product extends Model
     public function users()
     {
         return $this->hasManyThrough(
-            get_class(
-                config('auth.providers.users.model')
-            ),
+            config('auth.providers.users.model'),
             Subscription::class,
             'product_id', // this id
             'id', // users.id

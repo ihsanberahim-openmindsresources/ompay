@@ -17,10 +17,6 @@ class AndroidPayNotification extends Model
 
     public function user()
     {
-        return $this->belongsTo(
-            get_class(
-                config('auth.providers.users.model')
-            )
-        );
+        return $this->belongsTo(config('auth.providers.users.model'));
     }
 }

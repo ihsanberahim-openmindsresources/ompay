@@ -90,7 +90,7 @@ class StripeController extends Controller
 
     private function _processSubscription($payload, $event)
     {
-        $useClass = get_class(
+        $useClass = app(
             config('auth.providers.users.model')
         );
 
@@ -107,7 +107,7 @@ class StripeController extends Controller
 
         // Try associate with existing users
         if ($email) {
-            $useClass = get_class(
+            $useClass = app(
                 config('auth.providers.users.model')
             );
 

@@ -57,11 +57,7 @@ class Sku extends Model
 
     public function users()
     {
-        return $this->belongsToMany(
-            get_class(
-                config('auth.providers.users.model')
-            )
-        )->withTimestamps();
+        return $this->belongsToMany(config('auth.providers.users.model'))->withTimestamps();
     }
 
     public function priceTier()

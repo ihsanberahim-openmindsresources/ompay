@@ -30,11 +30,7 @@ class ActivationCode extends Model
 
     public function users()
     {
-        return $this->belongsToMany(
-            get_class(
-                config('auth.providers.users.model')
-            )
-        )
+        return $this->belongsToMany(config('auth.providers.users.model'))
         ->withTimestamps()
         ->withPivot(['discount_remaining']);
     }
