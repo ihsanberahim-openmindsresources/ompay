@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Omconnect\Pay\Http\Controllers\AndroidPayController;
 use Omconnect\Pay\Http\Controllers\IosPayController;
+use Omconnect\Pay\Http\Controllers\StripeController;
 
 Route::group([
     'prefix' => 'ompay',
@@ -18,7 +19,7 @@ Route::group([
     ], function () {
         Route::post('notification', [AndroidPayController::class, 'notification']);
     });
-    
+
     Route::group([
         'prefix' => 'stripe',
     ], function () {
