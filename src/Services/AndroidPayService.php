@@ -16,7 +16,7 @@ use Omconnect\Pay\Models\Product;
 use Omconnect\Pay\Models\Purchase;
 use Omconnect\Pay\Models\Subscription;
 use Omconnect\Pay\Models\TokenTransaction;
-use App\Models\User;
+use Illuminate\Foundation\Auth\User;
 use Omconnect\Pay\Models\AndroidPayNotification;
 
 class AndroidPayService

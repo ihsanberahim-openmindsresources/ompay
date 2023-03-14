@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace Omconnect\Pay\Models;
 
 use Illuminate\Database\Eloquent\Model;
 

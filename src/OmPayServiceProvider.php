@@ -5,6 +5,7 @@ namespace Omconnect\Pay;
 use Illuminate\Support\ServiceProvider;
 use Omconnect\Pay\Services\AndroidPayService;
 use Omconnect\Pay\Services\IosPayService;
+use Omconnect\Pay\Services\StripeService;
 
 class OmPayServiceProvider extends ServiceProvider
 {
@@ -53,10 +54,22 @@ class OmPayServiceProvider extends ServiceProvider
     {
         // Automatically apply the package configuration
         $this->mergeConfigFrom(__DIR__.'/../config/config.php', 'ompay');
+        $this->mergeConfigFrom(__DIR__.'/../config/stripe.php', 'stripe');
 
         // Register the main class to use with the facade
         $this->app->singleton('ompay', function () {
             return new OmPay;
+        });
+
+        $this->app->singleton(StripeService::class, function ($app) {
+            return new StripeService(
+                config('stripe.api_key'),
+                config('stripe.payment_methods'),
+                config('stripe.success_url'),
+                config('stripe.cancel_url'),
+                config('stripe.subscription_success_url'),
+                config('stripe.subscription_cancel_url'),
+            );
         });
 
         $this->app->singleton(IosPayService::class, function ($app) {
