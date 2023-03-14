@@ -25,7 +25,7 @@ class AndroidPayController extends Controller
         13 => 'SUBSCRIPTION_EXPIRED',
     ];
 
-    public function notification(Request $request, AndroidPayService $google_svc)
+    public function notification(Request $request, AndroidPayService $androidPaySvc)
     {
         $input = json_decode($request->getContent(), true);
 
@@ -42,22 +42,22 @@ class AndroidPayController extends Controller
             return response('', 202);
         }
 
-        $subscription_data = $data['subscriptionNotification'];
+        $subscriptionData = $data['subscriptionNotification'];
 
-        $notification_type = (isset(self::NOTIFICATION_TYPE[$subscription_data['notificationType']])) 
-            ? self::NOTIFICATION_TYPE[$subscription_data['notificationType']] 
+        $notificationType = (isset(self::NOTIFICATION_TYPE[$subscriptionData['notificationType']])) 
+            ? self::NOTIFICATION_TYPE[$subscriptionData['notificationType']] 
             : 'UNKNOWN';
 
         // Insert an entry
-        $google_notification = new AndroidPayNotification([
-            'notification_type' => $notification_type,
-            'auto_renew_product_id' => $subscription_data['subscriptionId'],
+        $androidPayNotification = new AndroidPayNotification([
+            'notification_type' => $notificationType,
+            'auto_renew_product_id' => $subscriptionData['subscriptionId'],
             'payload' => json_encode($input),
         ]);
-        $google_notification->save();
+        $androidPayNotification->save();
 
-        $data = $google_svc->verifyPurchase($subscription_data['purchaseToken'], $subscription_data['subscriptionId']);
-        $google_svc->processReceipt($data, null, $google_notification);
+        $data = $androidPaySvc->verifyPurchase($subscriptionData['purchaseToken'], $subscriptionData['subscriptionId']);
+        $androidPaySvc->processReceipt($data, null, $androidPayNotification);
 
         return response('');
     }

@@ -2,16 +2,11 @@
 
 namespace Omconnect\Pay\Services;
 
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 
 use Illuminate\Support\Carbon;
-use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
-use Firebase\JWT\JWT;
-use Firebase\JWT\JWK;
 use Google_Client;
 use Google_Service_AndroidPublisher;
 use Google_Service_Exception;
@@ -26,54 +21,13 @@ use Omconnect\Pay\Models\AndroidPayNotification;
 
 class AndroidPayService
 {
-    private $_client;
-    private $_app_id;
     private $_keyfile;
     private $_iap_bundle;
 
-    public function __construct($app_id, $keyfile, $iap_bundle)
+    public function __construct($keyfile, $iap_bundle)
     {
-        $this->_client = new Client([
-            'base_uri' => 'https://www.googleapis.com/',
-            'headers' => [
-                'Content-Type' => 'application/x-www-form-urlencoded',
-            ],
-        ]);
-        $this->_app_id = $app_id;
         $this->_keyfile = $keyfile;
         $this->_iap_bundle = $iap_bundle;
-    }
-
-    public function getAppId()
-    {
-        return $this->_app_id;
-    }
-
-    private function _getGooglePublicKey($kid)
-    {
-        $keys = Cache::remember('google_publickey', 86400, function () {
-            $request = $this->_client->get('oauth2/v3/certs');
-            return json_decode($request->getBody(), true);
-        });
-        return JWK::parseKeySet($keys)[$kid];
-    }
-
-    public function getUserInfo($id_token)
-    {
-        $parts = explode('.', $id_token);
-        $header = json_decode(base64_decode($parts[0]), true);
-        $key = $this->_getGooglePublicKey($header['kid']);
-        $jwt = JWT::decode($id_token, $key, [$header['alg']]);
-        if (!Str::startsWith($jwt->aud, $this->_app_id . '-')) {
-            return null;
-        }
-        return [
-            'uid' => $jwt->sub,
-            'email' => $jwt->email,
-            'name' => $jwt->name ?? null,
-            'picture' => (isset($jwt->picture)) ? $jwt->picture : null,
-            'expires_at' => Carbon::createFromTimestamp($jwt->exp),
-        ];
     }
 
     private function _getOrderId($order_id)

@@ -61,19 +61,14 @@ class OmPayServiceProvider extends ServiceProvider
 
         $this->app->singleton(IosPayService::class, function ($app) {
             return new IosPayService(
-                config('ompay.apple_appid'),
-                config('ompay.apple_teamid'),
-                config('ompay.apple_keyid'),
-                config('ompay.apple_keyfile'),
                 config('ompay.apple_iapsecret'),
             );
         });
 
         $this->app->singleton(AndroidPayService::class, function ($app) {
             return new AndroidPayService(
-                config('ompay.google_appid'),
                 config('ompay.google_keyfile'),
-                config('ompay.google_iapbundle'),
+                config('ompay.android_package_name'),
             );
         });
     }

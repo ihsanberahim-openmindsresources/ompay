@@ -10,7 +10,7 @@ use Omconnect\Pay\Services\IosPayService;
 
 class IosPayController extends Controller
 {
-    public function notification(Request $request, IosPayService $apple_svc)
+    public function notification(Request $request, IosPayService $iosPaySvc)
     {
         $input = json_decode($request->getContent(), true);
 
@@ -21,7 +21,7 @@ class IosPayController extends Controller
         unset($input['password']);
 
         // Insert an entry
-        $apple_notification = new IosPayNotification([
+        $iosPayNotification = new IosPayNotification([
             'environment' => $input['environment'],
             'notification_type' => $input['notification_type'],
             'auto_renew_product_id' => $input['auto_renew_product_id'],
@@ -31,14 +31,14 @@ class IosPayController extends Controller
                 : null,
             'payload' => json_encode($input),
         ]);
-        $apple_notification->save();
+        $iosPayNotification->save();
 
-        if ($apple_svc->validateIapSecret($password)) {
+        if ($iosPaySvc->validateIapSecret($password)) {
             $unified_receipt = $input['unified_receipt'];
             $verification_data = $unified_receipt['latest_receipt'];
 
-            $data = $apple_svc->verifyReceipt($verification_data);
-            $apple_svc->processReceipt($data, null, $apple_notification);
+            $data = $iosPaySvc->verifyReceipt($verification_data);
+            $iosPaySvc->processReceipt($data, null, $iosPayNotification);
 
             return response('');
         }

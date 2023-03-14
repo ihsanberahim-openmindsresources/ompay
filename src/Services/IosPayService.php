@@ -2,17 +2,13 @@
 
 namespace Omconnect\Pay\Services;
 
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Foundation\Auth\User;
 
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
 use GuzzleHttp\Exception\ClientException;
-use Firebase\JWT\JWT;
-use Firebase\JWT\JWK;
 use Omconnect\Pay\Models\PriceTier;
 use Omconnect\Pay\Models\Product;
 use Omconnect\Pay\Models\Purchase;
@@ -22,96 +18,11 @@ use Omconnect\Pay\Models\IosPayNotification;
 
 class IosPayService
 {
-    private $_client;
-    private $_app_id;
-    private $_team_id;
-    private $_key_id;
-    private $_keyfile;
     private $_iap_secret;
 
-    public function __construct($app_id, $team_id, $key_id, $keyfile, $iap_secret)
+    public function __construct($iap_secret)
     {
-        $this->_client = new Client([
-            'base_uri' => 'https://appleid.apple.com/',
-            'headers' => [
-                'Content-Type' => 'application/x-www-form-urlencoded',
-            ],
-        ]);
-        $this->_app_id = $app_id;
-        $this->_team_id = $team_id;
-        $this->_key_id = $key_id;
-        $this->_keyfile = $keyfile;
         $this->_iap_secret = $iap_secret;
-    }
-
-    private function _generateSecret()
-    {
-        $now = Carbon::now();
-        $private_key = Storage::get($this->_keyfile);
-        $payload = [
-            'iss' => $this->_team_id,
-            'iat' => $now->timestamp,
-            'exp' => $now->addMinutes(10)->timestamp,
-            'aud' => 'https://appleid.apple.com',
-            'sub' => $this->_app_id,
-        ];
-        $token = JWT::encode($payload, $private_key, 'ES256', $this->_key_id);
-        return $token;
-    }
-
-    public function getAppId()
-    {
-        return $this->_app_id;
-    }
-
-    public function validateCode($auth_code)
-    {
-        try {
-            $request = $this->_client->post('auth/token', [
-                'form_params' => [
-                    'client_id' => $this->_app_id,
-                    'client_secret' => $this->_generateSecret(),
-                    'grant_type' => 'authorization_code',
-                    'code' => $auth_code,
-                ],
-            ]);
-            // [
-            //     "access_token" => "ac1b22...fbaw"
-            //     "token_type" => "Bearer"
-            //     "expires_in" => 3600
-            //     "refresh_token" => "r34aa...A53A"
-            //     "id_token" => "eyJraW...OdGkgllvcEg"
-            // ]
-            return json_decode($request->getBody(), true);
-        } catch (ClientException $ex) {
-            Log::error('AppleService::validateCode - Error - ' . $ex->getMessage());
-        }
-        return null;
-    }
-
-    private function _getApplePublicKey($kid)
-    {
-        $keys = Cache::remember('apple_publickey', 86400, function () {
-            $request = $this->_client->get('auth/keys');
-            return json_decode($request->getBody(), true);
-        });
-        return JWK::parseKeySet($keys)[$kid];
-    }
-
-    public function getUserInfo($id_token)
-    {
-        $parts = explode('.', $id_token);
-        $header = json_decode(base64_decode($parts[0]), true);
-        $key = $this->_getApplePublicKey($header['kid']);
-        $jwt = JWT::decode($id_token, $key, [$header['alg']]);
-        if ($this->_app_id != $jwt->aud) {
-            return null;
-        }
-        return [
-            'uid' => $jwt->sub,
-            'email' => $jwt->email,
-            'expires_at' => Carbon::createFromTimestamp($jwt->exp),
-        ];
     }
 
     private function _buildProductionClient()
