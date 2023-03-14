@@ -30,6 +30,12 @@ class AndroidPayService
         $this->_iap_bundle = $iap_bundle;
     }
 
+    public function getGoogleServiceKey() {
+        return str($this->_keyfile)->startsWith('{') 
+            ? $this->_keyfile 
+            : Storage::path($this->_keyfile);
+    }
+
     private function _getOrderId($order_id)
     {
         $regex = '/(.+?)(\.\.\d+)?$/';
@@ -40,7 +46,9 @@ class AndroidPayService
     public function verifyPurchase($purchase_token, $product_id)
     {
         $client = new Google_Client();
-        $client->setAuthConfig(Storage::path($this->_keyfile));
+        $client->setAuthConfig(
+            $this->getGoogleServiceKey()
+        );
         $client->setScopes(Google_Service_AndroidPublisher::ANDROIDPUBLISHER);
 
         try {
