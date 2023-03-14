@@ -32,7 +32,7 @@ class AndroidPayService
 
     public function getGoogleServiceKey() {
         return str($this->_keyfile)->startsWith('{') 
-            ? $this->_keyfile 
+            ? json_decode($this->_keyfile, true)
             : Storage::path($this->_keyfile);
     }
 
