@@ -16,6 +16,7 @@ use Omconnect\Pay\Models\Product;
 use Omconnect\Pay\Models\Subscription;
 use Omconnect\Pay\Models\Transaction;
 use Omconnect\Pay\Models\TransactionItem;
+use Omconnect\Pay\Events\AfterProcessSubscription;
 
 class StripeService
 {
@@ -239,6 +240,8 @@ class StripeService
         });
 
         $subscription->refresh();
+
+        AfterProcessSubscription::dispatch($subscription);
 
         return $subscription->transaction_id;
     }
