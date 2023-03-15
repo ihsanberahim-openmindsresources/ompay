@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('product_id_apple')->nullable()->index();
             $table->string('product_id_stripe')->nullable()->index();
             $table->integer('months');
-            $table->boolean('is_active')->index();
+            $table->boolean('is_active')->default(0)->index();
             $table->string('currency')->nullable();
             $table->bigInteger('price')->nullable();
             $table->timestamps();
