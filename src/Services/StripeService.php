@@ -2,14 +2,15 @@
 
 namespace Omconnect\Pay\Services;
 
-use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Foundation\Auth\User;
 
-use Stripe\Stripe;
-use Stripe\Customer;
 use Stripe\Checkout\Session;
+use Stripe\Customer;
 use Stripe\PromotionCode;
+use Stripe\Stripe;
+use Stripe\Subscription as StripeSubscription;
 
 use Omconnect\Pay\Models\Product;
 use Omconnect\Pay\Models\Subscription;
@@ -250,5 +251,15 @@ class StripeService
         $coupon = $collection->first();
 
         return $coupon;
+    }
+
+    public function findCheckoutSession($session_id)
+    {
+        return Session::retrieve($session_id);
+    }
+
+    public function findSubscription($subscription_id)
+    {
+        return StripeSubscription::retrieve($subscription_id);
     }
 }
