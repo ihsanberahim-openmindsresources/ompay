@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
 use GuzzleHttp\Exception\ClientException;
+use Omconnect\Pay\Events\AfterProcessSubscription;
 use Omconnect\Pay\Models\PriceTier;
 use Omconnect\Pay\Models\Product;
 use Omconnect\Pay\Models\Purchase;
@@ -151,7 +152,8 @@ class IosPayService
         $subscription->save();
 
         if ($subscription->user_id) {
-            $owner = User::find($subscription->user_id);
+            $userModel = app(config('auth.providers.users.model'));
+            $owner = $userModel::find($subscription->user_id);
             if ($owner) {
                 $owner->resetActiveSubscriptionCache();
                 // Update Notification
@@ -176,6 +178,8 @@ class IosPayService
                 }
             }
         }
+
+        AfterProcessSubscription::dispatch($subscription);
     }
 
     private function _processConsumableProduct($purchase, $receipt_type, Product $product, User $user = null, IosPayNotification $notification = null)
@@ -209,7 +213,8 @@ class IosPayService
         $purchase->save();
 
         if ($purchase->user_id) {
-            $owner = User::find($purchase->user_id);
+            $userModel = app(config('auth.providers.users.model'));
+            $owner = $userModel::find($purchase->user_id);
             if ($owner) {
                 // Add tokens
                 if ($product->tokens > 0) {
@@ -266,7 +271,8 @@ class IosPayService
         $purchase->save();
 
         if ($purchase->user_id && $purchase->sku_id) {
-            $owner = User::find($purchase->user_id);
+            $userModel = app(config('auth.providers.users.model'));
+            $owner = $userModel::find($purchase->user_id);
             if ($owner) {
                 $owner->skus()->syncWithoutDetaching([$purchase->sku_id]);
                 $owner->resetOwnedCache();

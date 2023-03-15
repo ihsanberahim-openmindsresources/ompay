@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Omconnect\Pay\Events\AfterProcessSubscription;
 use Omconnect\Pay\Models\Product;
 use Stripe\Subscription as StripeSubscription;
 use Stripe\Webhook;
@@ -188,6 +189,10 @@ class StripeController extends Controller
                 }
             }
         }
+
+        if($subscription) {
+            AfterProcessSubscription::dispatch($subscription);
+        }
     }
 
     private function _retrieveStripeSubscription(StripeSubscription $stripe_subscription, $event)
@@ -265,5 +270,7 @@ class StripeController extends Controller
                 }
             }
         }
+
+        AfterProcessSubscription::dispatch($subscription);
     }
 }

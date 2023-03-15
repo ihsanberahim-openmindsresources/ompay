@@ -11,7 +11,7 @@ use GuzzleHttp\Exception\ClientException;
 use Google_Client;
 use Google_Service_AndroidPublisher;
 use Google_Service_Exception;
-
+use Omconnect\Pay\Events\AfterProcessSubscription;
 use Omconnect\Pay\Models\PriceTier;
 use Omconnect\Pay\Models\Product;
 use Omconnect\Pay\Models\Purchase;
@@ -209,6 +209,8 @@ class AndroidPayService
                 }
             }
         }
+
+        AfterProcessSubscription::dispatch($subscription);
     }
 
     private function _processConsumableProduct($purchase, $receipt_type, Product $product, User $user = null, AndroidPayNotification $notification = null)
