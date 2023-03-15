@@ -16,8 +16,9 @@ return new class extends Migration
         Schema::create('products', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('title');
-            $table->string('product_id_google')->index();
-            $table->string('product_id_apple')->index();
+            $table->string('product_id_google')->nullable()->index();
+            $table->string('product_id_apple')->nullable()->index();
+            $table->string('product_id_stripe')->nullable()->index();
             $table->integer('months');
             $table->boolean('is_active')->index();
             $table->string('currency')->nullable();
