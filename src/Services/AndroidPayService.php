@@ -4,8 +4,9 @@ namespace Omconnect\Pay\Services;
 
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-
+use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Carbon;
+
 use GuzzleHttp\Exception\ClientException;
 use Google_Client;
 use Google_Service_AndroidPublisher;
@@ -16,7 +17,6 @@ use Omconnect\Pay\Models\Product;
 use Omconnect\Pay\Models\Purchase;
 use Omconnect\Pay\Models\Subscription;
 use Omconnect\Pay\Models\TokenTransaction;
-use Illuminate\Foundation\Auth\User;
 use Omconnect\Pay\Models\AndroidPayNotification;
 
 class AndroidPayService
@@ -46,9 +46,11 @@ class AndroidPayService
     public function verifyPurchase($purchase_token, $product_id)
     {
         $client = new Google_Client();
+        
         $client->setAuthConfig(
             $this->getGoogleServiceKey()
         );
+
         $client->setScopes(Google_Service_AndroidPublisher::ANDROIDPUBLISHER);
 
         try {
