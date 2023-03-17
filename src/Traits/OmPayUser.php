@@ -70,4 +70,9 @@ trait OmPayUser{
         }
         return $is_active;
     }
+
+    public function resetActiveSubscriptionCache()
+    {
+        $this->_getSubscriptionCache()->flush();
+    }
 }
