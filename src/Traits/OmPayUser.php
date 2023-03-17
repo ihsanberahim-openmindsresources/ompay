@@ -6,6 +6,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Omconnect\Pay\Models\Sku;
 use Omconnect\Pay\Models\TokenTransaction;
+use Omconnect\Pay\Models\Subscription;
 
 trait OmPayUser{
     // Get transactions
@@ -49,6 +50,11 @@ trait OmPayUser{
             ->where('expires_date', '>', Carbon::now())
             ->orderBy('expires_date', 'desc')
             ->get();
+    }
+
+    public function subscriptions()
+    {
+        return $this->hasMany(Subscription::class);
     }
 
     public function hasActiveSubscription()
