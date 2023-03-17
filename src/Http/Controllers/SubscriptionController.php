@@ -2,10 +2,11 @@
 
 namespace Omconnect\Pay\Http\Controllers;
 
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Validation\Rule;
-use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Validator;
 
 use Omconnect\Pay\Models\Product;
@@ -14,24 +15,29 @@ use Omconnect\Pay\Services\IosPayService;
 
 class SubscriptionController extends Controller
 {
-    public function list(Request $request, User $user)
+    public function list(Request $request)
     {
-        $product_collection = Product::where('is_active', true)
+        $productCollection = Product::where('is_active', true)
             ->orderBy('months', 'desc')
             ->get();
-            
+        
+        $activeSubscription = $this->getUserActiveSubscription();
+
+        $productId = Arr::get($activeSubscription, 'id');
+        $expiresDate = Arr::get($activeSubscription, 'expires_date');
+        $platform = Arr::get($activeSubscription, 'platform');
+
         $products = [];
 
-        $active_subscription = $user->activeSubscription();
-
-        foreach ($product_collection as $p) {
-            $owned = ($active_subscription) ? $active_subscription->product_id == $p->id : false;
+        foreach ($productCollection as $p) {
             $product = $p->toArray();
+
+            $owned = ($productId == $p->id);
 
             $product = array_merge($product, [
                 'owned' => $owned,
-                'expiryDate' => $owned ?  $active_subscription->expires_date : null,
-                'platform' => $owned ?  $active_subscription->platform : null,
+                'expiryDate' => $expiresDate,
+                'platform' => $platform,
             ]);
 
             $products[] = $product;
@@ -43,7 +49,7 @@ class SubscriptionController extends Controller
         ]);
     }
 
-    public function verify(Request $request, User $user, IosPayService $iosPaySvc, AndroidPayService $androidPaySvc)
+    public function verify(Request $request, IosPayService $iosPaySvc, AndroidPayService $androidPaySvc)
     {
         $validation = Validator::make($request->all(), [
             'source' => [
@@ -65,10 +71,10 @@ class SubscriptionController extends Controller
         }
 
         $input = $validation->valid();
+        $user = auth()->user();
 
         // Before Update
-        $current_active_subscription = $user->activeSubscription();
-        $current_active_token_subscriptions = $user->activeSubscriptions(Product::TYPE_TOKENSUBSCRIPTION);
+        $currentActiveSubscription = $user ? $user->activeSubscription() : $user;
 
         switch ($input['source']) {
             case 'apple':
@@ -89,25 +95,18 @@ class SubscriptionController extends Controller
         }
 
         // After Update
-        $new_active_subscription = $user->activeSubscription();
-        $new_active_token_subscriptions = $user->activeSubscriptions(Product::TYPE_TOKENSUBSCRIPTION);
+        $newActionSubscription = $user ? $user->activeSubscription() : null;
 
         $status = 0;
         $new_subscriptions = [];
+
         // Any new Subscription
-        if (
-            $new_active_subscription != null
-            && ($current_active_subscription == null
-                || ($current_active_subscription->id != $new_active_subscription->id)
-            )
-        ) {
+        $newActiveSubId = Arr::get($newActionSubscription, 'id');
+        $currentActiveSubId = Arr::get($currentActiveSubscription, 'id');
+
+        if ($newActiveSubId != $currentActiveSubId) {
             $status = 1;
             $new_subscriptions[] = true;
-        }
-        // Any new Token Subscriptions
-        if ($current_active_token_subscriptions != $new_active_token_subscriptions) {
-            $status = 1;
-            $new_subscriptions[Product::TYPE_TOKENSUBSCRIPTION] = true;
         }
 
         if ($status) {
@@ -121,25 +120,31 @@ class SubscriptionController extends Controller
     }
 
     /** V2 */
-    public function listAll(Request $request, User $user)
+    public function listAll(Request $request)
     {
-        $data = [];
-
         $product_collection = Product::where('is_active', true)
             ->orderBy('months', 'desc')
             ->get();
+
+        $activeSubscription = $this->getUserActiveSubscription();
+        
+        $productId = Arr::get($activeSubscription, 'id');
+        $expiresDate = Arr::get($activeSubscription, 'expires_date');
+        $platform = Arr::get($activeSubscription, 'platform');
+        
         $products = [];
-
-        $active_subscription = $user->activeSubscription();
-
         foreach ($product_collection as $p) {
-            $owned = ($active_subscription) ? $active_subscription->product_id == $p->id : false;
+
             $product = $p->toArray();
+
+            $owned = ($productId == $p->id);
+
             $product = array_merge($product, [
                 'owned' => $owned,
-                'expiryDate' => $owned ?  $active_subscription->expires_date : null,
-                'platform' => $owned ?  $active_subscription->platform : null,
+                'expiryDate' => $expiresDate,
+                'platform' => $platform,
             ]);
+
             $products[] = $product;
         }
 
@@ -148,30 +153,21 @@ class SubscriptionController extends Controller
             'upgradeable' => false,
         ];
 
-        /** Token Subscriptions */
-        $product_collection = Product::where('is_active', true)
-            ->where('type', Product::TYPE_TOKENPACK)
-            ->orderBy('tokens')
-            ->get();
-        $token_packs = [];
-
-        foreach ($product_collection as $p) {
-            $product = [
-                'id' => $p->id,
-                'title' => $p->title,
-                'productIdGoogle' => $p->product_id_google,
-                'productIdApple' => $p->product_id_apple,
-                'months' => $p->months,
-                'tokens' => $p->tokens,
-                'freeTokens' => $p->free_tokens,
-            ];
-            $token_packs[] = $product;
-        }
-
         return response([
             'status' => 1,
             'subscriptions' => $data,
-            'tokenPacks' => $token_packs,
         ]);
+    }
+
+    /**
+     * @return Subscription | null 
+     * @throws BindingResolutionException 
+     */
+    private function getUserActiveSubscription() {
+        $user = auth()->user();
+
+        if(!$user) return null;
+
+        return $user->activeSubscription();
     }
 }
