@@ -36,7 +36,7 @@ class SubscriptionController extends Controller
 
             $product = array_merge($product, [
                 'owned' => $owned,
-                'expiryDate' => $expiresDate,
+                'expiry_date' => $expiresDate,
                 'platform' => $platform,
             ]);
 
@@ -141,7 +141,7 @@ class SubscriptionController extends Controller
 
             $product = array_merge($product, [
                 'owned' => $owned,
-                'expiryDate' => $expiresDate,
+                'expiry_date' => $expiresDate,
                 'platform' => $platform,
             ]);
 
