@@ -74,7 +74,7 @@ class SubscriptionController extends Controller
         $user = auth()->user();
 
         // Before Update
-        $currentActiveSubscription = $user ? $user->activeSubscription() : $user;
+        $currentActiveSubscription = $this->getUserActiveSubscription();
 
         switch ($input['source']) {
             case 'apple':
@@ -95,14 +95,14 @@ class SubscriptionController extends Controller
         }
 
         // After Update
-        $newActionSubscription = $user ? $user->activeSubscription() : null;
+        $newActionSubscription = $this->getUserActiveSubscription();
 
         $status = 0;
         $new_subscriptions = [];
 
         // Any new Subscription
-        $newActiveSubId = Arr::get($newActionSubscription, 'id');
         $currentActiveSubId = Arr::get($currentActiveSubscription, 'id');
+        $newActiveSubId = Arr::get($newActionSubscription, 'id');
 
         if ($newActiveSubId != $currentActiveSubId) {
             $status = 1;
@@ -115,7 +115,7 @@ class SubscriptionController extends Controller
 
         return response([
             'status' => $status,
-            'newSubscriptions' => (object) $new_subscriptions,
+            'new_subscriptions' => $new_subscriptions,
         ]);
     }
 
