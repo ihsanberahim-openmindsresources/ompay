@@ -4,7 +4,6 @@ namespace Omconnect\Pay\Services;
 
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Carbon;
 
 use GuzzleHttp\Exception\ClientException;
@@ -122,7 +121,7 @@ class AndroidPayService
         }
     }
 
-    public function processReceipt($purchase, User $user = null, AndroidPayNotification $notification = null)
+    public function processReceipt($purchase, $user = null, AndroidPayNotification $notification = null)
     {
         if ($purchase == null) {
             return;
@@ -145,7 +144,7 @@ class AndroidPayService
         }
     }
 
-    private function _processSubscription($purchase, $receipt_type, Product $product, User $user = null, AndroidPayNotification $notification = null)
+    private function _processSubscription($purchase, $receipt_type, Product $product, $user = null, AndroidPayNotification $notification = null)
     {
         $transaction_id = $purchase['transaction_id'];
         $subscription = Subscription::where('platform', Subscription::PLATFORM_GOOGLE)->where('transaction_id', $transaction_id)->first();
@@ -184,7 +183,8 @@ class AndroidPayService
             /**
              * @var User $owner
              */
-            $owner = User::find($subscription->user_id);
+            $userModel = app(config('auth.providers.users.model'));
+            $owner = $userModel::find($subscription->user_id);
             if ($owner) {
                 $owner->resetActiveSubscriptionCache();
                 // Update Notification
@@ -213,7 +213,7 @@ class AndroidPayService
         AfterProcessSubscription::dispatch($subscription);
     }
 
-    private function _processConsumableProduct($purchase, $receipt_type, Product $product, User $user = null, AndroidPayNotification $notification = null)
+    private function _processConsumableProduct($purchase, $receipt_type, Product $product, $user = null, AndroidPayNotification $notification = null)
     {
         // Consumables requires pending purchase with User ID
         if (!$user) {
@@ -244,7 +244,8 @@ class AndroidPayService
         $purchase->save();
 
         if ($purchase->user_id) {
-            $owner = User::find($purchase->user_id);
+            $userModel = app(config('auth.providers.users.model'));
+            $owner = $userModel::find($purchase->user_id);
             if ($owner) {
                 // Add tokens
                 if ($product->tokens > 0) {
@@ -270,7 +271,7 @@ class AndroidPayService
         }
     }
 
-    private function _processBundle($purchase, $receipt_type, PriceTier $price_tier, User $user = null, AndroidPayNotification $notification = null)
+    private function _processBundle($purchase, $receipt_type, PriceTier $price_tier, $user = null, AndroidPayNotification $notification = null)
     {
         // Bundle requires pending purchase with User ID
         if (!$user) {
@@ -301,7 +302,8 @@ class AndroidPayService
         $purchase->save();
 
         if ($purchase->user_id && $purchase->sku_id) {
-            $owner = User::find($purchase->user_id);
+            $userModel = app(config('auth.providers.users.model'));
+            $owner = $userModel::find($purchase->user_id);
             if ($owner) {
                 $owner->skus()->syncWithoutDetaching([$purchase->sku_id]);
                 $owner->resetOwnedCache();

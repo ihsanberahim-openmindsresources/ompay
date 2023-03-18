@@ -3,7 +3,6 @@
 namespace Omconnect\Pay\Services;
 
 use Illuminate\Support\Facades\Log;
-use Illuminate\Foundation\Auth\User;
 
 use Carbon\Carbon;
 use GuzzleHttp\Client;
@@ -85,7 +84,7 @@ class IosPayService
         }
     }
 
-    public function processReceipt($data, User $user = null, IosPayNotification $notification = null)
+    public function processReceipt($data, $user = null, IosPayNotification $notification = null)
     {
         if (!isset($data['status'])) {
             return;
@@ -116,7 +115,7 @@ class IosPayService
         }
     }
 
-    private function _processSubscription($purchase, $receipt_type, Product $product, User $user = null, IosPayNotification $notification = null)
+    private function _processSubscription($purchase, $receipt_type, Product $product, $user = null, IosPayNotification $notification = null)
     {
         $transaction_id = $purchase['transaction_id'];
         $subscription = Subscription::where('platform', Subscription::PLATFORM_APPLE)->where('transaction_id', $transaction_id)->first();
@@ -182,7 +181,7 @@ class IosPayService
         AfterProcessSubscription::dispatch($subscription);
     }
 
-    private function _processConsumableProduct($purchase, $receipt_type, Product $product, User $user = null, IosPayNotification $notification = null)
+    private function _processConsumableProduct($purchase, $receipt_type, Product $product, $user = null, IosPayNotification $notification = null)
     {
         // Consumables requires pending purchase with User ID
         if (!$user) {
@@ -240,7 +239,7 @@ class IosPayService
         }
     }
 
-    private function _processBundle($purchase, $receipt_type, PriceTier $price_tier, User $user = null, IosPayNotification $notification = null)
+    private function _processBundle($purchase, $receipt_type, PriceTier $price_tier, $user = null, IosPayNotification $notification = null)
     {
         // Bundle requires pending purchase with User ID
         if (!$user) {

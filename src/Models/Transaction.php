@@ -22,7 +22,7 @@ class Transaction extends Model
     //
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(config('auth.providers.users.model'));
     }
 
     public function activationCode()

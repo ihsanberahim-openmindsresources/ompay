@@ -4,7 +4,6 @@ namespace Omconnect\Pay\Services;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Illuminate\Foundation\Auth\User;
 
 use Stripe\Checkout\Session;
 use Stripe\Customer;
@@ -36,7 +35,7 @@ class StripeService
         $this->_subscription_cancel_url = $subscription_cancel_url;
     }
 
-    public function createUnlockTransaction(User $user, $skus)
+    public function createUnlockTransaction($user, $skus)
     {
         /** @var Transaction */
         $transaction = null;
@@ -162,7 +161,7 @@ class StripeService
         return $session;
     }
 
-    public function createCustomer(User $user)
+    public function createCustomer($user)
     {
         $payload = [
             'email' => $user->email,
