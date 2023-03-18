@@ -3,6 +3,7 @@
 namespace Omconnect\Pay\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 class Subscription extends Model
 {
@@ -31,5 +32,9 @@ class Subscription extends Model
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function isExpired() {
+        return Carbon::parse($this->expires_date)->isBefore(now());
     }
 }

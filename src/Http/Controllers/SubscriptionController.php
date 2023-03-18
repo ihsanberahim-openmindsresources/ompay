@@ -10,6 +10,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Validator;
 
 use Omconnect\Pay\Models\Product;
+use Omconnect\Pay\Models\Subscription;
 use Omconnect\Pay\Services\AndroidPayService;
 use Omconnect\Pay\Services\IosPayService;
 
@@ -76,6 +77,7 @@ class SubscriptionController extends Controller
         // Before Update
         $currentActiveSubscription = $this->getUserActiveSubscription();
 
+        $data = [];
         switch ($input['source']) {
             case 'apple':
                 $data = $iosPaySvc->verifyReceipt($input['verification_data']);
@@ -98,7 +100,7 @@ class SubscriptionController extends Controller
         $newActionSubscription = $this->getUserActiveSubscription();
 
         $status = 0;
-        $new_subscriptions = [];
+        $newActionSubscription = [];
 
         // Any new Subscription
         $currentActiveSubId = Arr::get($currentActiveSubscription, 'id');
@@ -106,16 +108,41 @@ class SubscriptionController extends Controller
 
         if ($newActiveSubId != $currentActiveSubId) {
             $status = 1;
-            $new_subscriptions[] = true;
+            $newActionSubscription[] = true;
         }
 
-        if ($status) {
-            // event::dispatch($user->id);
+        // if doesn't detect subscription changes. 
+        // atleast tell verify success for Android/iOS
+        if ($status == 0 && !empty($data)) {
+            $data['platform'] = $input['source'];
+
+            $tmpSubscription = Subscription::firstOrNew(
+                Arr::only($data, [
+                    'transaction_id'
+                ]),
+                Arr::except($data, [
+                    'transaction_id'
+                ])
+            );
+
+            if (!($tmpSubscription->id > 0)) {
+                $tmpSubscription->user_id = $user->id;
+                $tmpSubscription->save();
+            }
+
+            if (!$tmpSubscription->isExpired()) {
+                return response([
+                    'status' => 1,
+                    'new_subscriptions' => [
+                        $tmpSubscription->toArray()
+                    ]
+                ]);
+            }
         }
 
         return response([
             'status' => $status,
-            'new_subscriptions' => $new_subscriptions,
+            'new_subscriptions' => $newActionSubscription,
         ]);
     }
 
