@@ -97,18 +97,18 @@ class SubscriptionController extends Controller
         }
 
         // After Update
-        $newActionSubscription = $this->getUserActiveSubscription();
+        $newActiveSubscription = $this->getUserActiveSubscription();
 
         $status = 0;
-        $newActionSubscription = [];
+        $newActiveSubscription = [];
 
         // Any new Subscription
         $currentActiveSubId = Arr::get($currentActiveSubscription, 'id');
-        $newActiveSubId = Arr::get($newActionSubscription, 'id');
+        $newActiveSubId = Arr::get($newActiveSubscription, 'id');
 
         if ($newActiveSubId != $currentActiveSubId) {
             $status = 1;
-            $newActionSubscription[] = true;
+            $newActiveSubscription[] = $newActiveSubscription;
         }
 
         // if doesn't detect subscription changes. 
@@ -142,7 +142,7 @@ class SubscriptionController extends Controller
 
         return response([
             'status' => $status,
-            'new_subscriptions' => $newActionSubscription,
+            'new_subscriptions' => $newActiveSubscription,
         ]);
     }
 
