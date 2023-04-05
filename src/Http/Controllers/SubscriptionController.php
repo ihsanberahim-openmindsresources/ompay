@@ -96,11 +96,11 @@ class SubscriptionController extends Controller
                 ], 422);
         }
 
+        $status = 0;
+        $newAcitveSubsList = [];
+
         // After Update
         $newActiveSubscription = $this->getUserActiveSubscription();
-
-        $status = 0;
-        $newActiveSubscription = [];
 
         // Any new Subscription
         $currentActiveSubId = Arr::get($currentActiveSubscription, 'id');
@@ -108,7 +108,7 @@ class SubscriptionController extends Controller
 
         if ($newActiveSubId != $currentActiveSubId) {
             $status = 1;
-            $newActiveSubscription[] = $newActiveSubscription;
+            $newAcitveSubsList[] = $newActiveSubscription;
         }
 
         // if doesn't detect subscription changes. 
@@ -131,18 +131,13 @@ class SubscriptionController extends Controller
             }
 
             if (!$tmpSubscription->isExpired()) {
-                return response([
-                    'status' => 1,
-                    'new_subscriptions' => [
-                        $tmpSubscription->toArray()
-                    ]
-                ]);
+                $newAcitveSubsList[] = $tmpSubscription;
             }
         }
 
         return response([
             'status' => $status,
-            'new_subscriptions' => $newActiveSubscription,
+            'new_subscriptions' => $newAcitveSubsList,
         ]);
     }
 
